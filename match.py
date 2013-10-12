@@ -1,8 +1,8 @@
 class matchChamp:
     def __init__(self):
         self.title = "what"
-    def matchChamp(self,pathToTits):
-        print("Matching Character: " + pathToTits)
+    def matchChamp(self,pathToScreenShot):
+        print("Matching Character: " + pathToScreenShot)
 
 
 
