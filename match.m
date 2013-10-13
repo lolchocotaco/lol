@@ -75,6 +75,7 @@ for i = 1:numel(imf)
     dist(i) =  sum(sum(sum(abs(res_charImg - im2double(champs{i}.image)))));
 end
 [~, winner] = min(dist);
+fprintf('Champion: %s\n',champs{winner}.name)
 
 figure
 imshow(champs{winner}.image)
