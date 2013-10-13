@@ -10,7 +10,15 @@ imf = imf(3:end);
 champs = cell([numel(imf) 1]);
 for i = 1:numel(imf)
 %     disp(imf(i).name);
-    champs{i} = imread(strcat(imdir,imf(i).name));
+    champs{i}.name = strrep(imf(i).name,'.png','');
+    champs{i}.image = imread(strcat(imdir,imf(i).name));
+    champs{i}.r_ch = champs{i}.image(:,:,1);
+    champs{i}.g_ch = champs{i}.image(:,:,2);
+    champs{i}.b_ch = champs{i}.image(:,:,3);
+    
+    champs{i}.r_hist = imhist(champs{i}.r_ch);
+    champs{i}.g_hist = imhist(champs{i}.g_ch);
+    champs{i}.b_hist = imhist(champs{i}.b_ch);
 end
 
 champ_thresh = champs{93};
@@ -45,9 +53,19 @@ imshow(charImg)
 
 %% FIND THE CHAMP
 
+% Split color channels
+charImg_r = (charImg(:,:,1));
+charImg_g = (charImg(:,:,2));
+charImg_b = (charImg(:,:,3));
 
+char_r_hist = imhist(charImg_r);
+char_g_hist = imhist(charImg_g);
+char_b_hist = imhist(charImg_b);
 
-
+for i = 1:numel(imf)
+    
+    
+end
 
 
 
