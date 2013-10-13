@@ -29,21 +29,64 @@ for ind,champFile in enumerate(imf):
 champSize = 120
 
 
-base = cv2.imread('./img/vi.png')
-BL = base[len(base)/4:len(base):1,0:len(base):1]
+base = cv2.imread('./img/nid_dead.png')
+BL = base[len(base)/4:len(base):1,0:len(base)/4:1]
 
 #Magic Box
+#
+# # charBox= [14,688,92, 92]
+# charBox = [16,720,74,68]
+# xPos = charBox[0]
+# yPos = charBox[1]
+# sL = charBox[2]
+# scale = champSize/sL
+# # cv2.rectangle(BL,(14,688),(14+92,688+92),(0,0,255),5)
+# # cv2.imshow("box",BL)
+#
+#
 
-# charBox= [14,688,92, 92]
-charBox = [16,720,74,68]
-xPos = charBox[0]
-yPos = charBox[1]
-sL = charBox[2]
-scale = champSize/sL
-# cv2.rectangle(BL,(14,688),(14+92,688+92),(0,0,255),5)
-# cv2.imshow("box",BL)
 
-cropped = BL[ yPos:yPos+sL,xPos:xPos+sL]
+## FIND THE SQUARE
+# I = rgb2gray(BL);
+# th = graythresh(I);
+# I_th = im2bw(I,th);
+I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
+(thresh, I_th) = cv2.threshold(I, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+# Ifill = imfill(I_th,'holes');
+Ifill = I_th
+contour, _ = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+for cnt in contour:
+    cv2.drawContours(Ifill,[cnt], 0, 255, -1)
+
+# Iarea = bwareaopen(Ifill,100);
+gray = Ifill
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
+Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
+
+sq_thresh = 0.2
+sq = []
+contours, _ = cv2.findContours(Iarea,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+for cnt in contours:
+    x,y,w,h = cv2.boundingRect(cnt)
+    sq_size = w*h;
+    sq_sqness = abs(1-max(w,h)/min(w,h))
+    loc_bias = 1.0*x/BL.shape[1] + 1.0*(BL.shape[0]-y)/BL.shape[0]
+    sq.append(sq_size * (sq_sqness<sq_thresh)/loc_bias)
+
+
+ind= max(enumerate(sq), key=itemgetter(1))[0]
+x,y,w,h = cv2.boundingRect(contours[ind])
+cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),5)
+cv2.imshow("Orig",BL)
+
+
+
+
+
+
+
+cropped = BL[ y:y+h,x:x+w]
 bigCrop = cv2.resize(cropped ,(champSize,champSize))
 dist= []
 bigCrop = np.array(bigCrop,dtype='f')
@@ -53,36 +96,80 @@ for ii,champ in enumerate(champList):
 winner= min(enumerate(dist), key=itemgetter(1))[0]
 print("Champion is: {0}").format(champList[winner].name)
 cv2.imshow(champList[winner].name,champList[winner].image)
+
 cv2.waitKey()
 
-
-
-
-
-
-
-
-
-
-
-# ## FIND THE SQUARE
-# # I = rgb2gray(BL);
-# # th = graythresh(I);
-# # I_th = im2bw(I,th);
-# I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
-# (thresh, I_th) = cv2.threshold(I, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+# BW = Iarea
+# # grab contours
+# cs,_ = cv2.findContours( BW.astype('uint8'), mode=cv2.RETR_LIST,
+#                              method=cv2.CHAIN_APPROX_SIMPLE )
+# set up the 'FilledImage' bit of regionprops.
+# filledI = np.zeros(BW.shape[0:2]).astype('uint8')
+# # set up the 'ConvexImage' bit of regionprops.
+# convexI = np.zeros(BW.shape[0:2]).astype('uint8')
 #
-# # Ifill = imfill(I_th,'holes');
-# Ifill = I_th
-# contour, hier = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-# for cnt in contour:
-#     cv2.drawContours(Ifill,[cnt], 0, 255, -1)
+# # for each contour c in cs:
+# # will demonstrate with cs[0] but you could use a loop.
+# i=0
+# c = cs[i]
 #
-#  # Iarea = bwareaopen(Ifill,100);
-# gray = Ifill
-# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-# Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
+# # calculate some things useful later:
+# m = cv2.moments(c)
 #
+# # ** regionprops **
+# Area          = m['m00']
+# Perimeter     = cv2.arcLength(c,True)
+# # bounding box: x,y,width,height
+# BoundingBox   = cv2.boundingRect(c)
+# # centroid    = m10/m00, m01/m00 (x,y)
+# Centroid      = ( m['m10']/m['m00'],m['m01']/m['m00'] )
+#
+# # EquivDiameter: diameter of circle with same area as region
+# EquivDiameter = np.sqrt(4*Area/np.pi)
+# # Extent: ratio of area of region to area of bounding box
+# Extent        = Area/(BoundingBox[2]*BoundingBox[3])
+#
+# # FilledImage: draw the region on in white
+# cv2.drawContours( filledI, cs, i, color=255, thickness=-1 )
+# # calculate indices of that region..
+# regionMask    = (filledI==255)
+# # FilledArea: number of pixels filled in FilledImage
+# FilledArea    = np.sum(regionMask)
+# # PixelIdxList : indices of region.
+# # (np.array of xvals, np.array of yvals)
+# PixelIdxList  = regionMask.nonzero()
+#
+# # CONVEX HULL stuff
+# # convex hull vertices
+# ConvexHull    = cv2.convexHull(c)
+# ConvexArea    = cv2.contourArea(ConvexHull)
+# # Solidity := Area/ConvexArea
+# Solidity      = Area/ConvexArea
+# # convexImage -- draw on convexI
+# cv2.drawContours( convexI, [ConvexHull], -1,
+#                   color=255, thickness=-1 )
+#
+# # ELLIPSE - determine best-fitting ellipse.
+# centre,axes,angle = cv2.fitEllipse(c)
+# MAJ = np.argmax(axes) # this is MAJor axis, 1 or 0
+# MIN = 1-MAJ # 0 or 1, minor axis
+# # Note: axes length is 2*radius in that dimension
+# MajorAxisLength = axes[MAJ]
+# MinorAxisLength = axes[MIN]
+# Eccentricity    = np.sqrt(1-(axes[MIN]/axes[MAJ])**2)
+# Orientation     = angle
+# EllipseCentre   = centre # x,y
+#
+# # ** if an image is supplied with the BW:
+# # Max/Min Intensity (only meaningful for a one-channel img..)
+# # MaxIntensity  = np.max(img[regionMask])
+# # MinIntensity  = np.min(img[regionMask])
+# # # Mean Intensity
+# # MeanIntensity = np.mean(img[regionMask],axis=0)
+# # pixel values
+# PixelValues   = BL[regionMask]
+# cv2.imshow("area",PixelValues)
+
 
 
 # edges = cv2.Canny(I,150,200,apertureSize = 3)
@@ -123,10 +210,6 @@ cv2.waitKey()
 # for num,cnt in enumerate(Ifinal):
 #     print("hello")
 # cv2.drawContours(mask,conour)
-
-
-
-
 
 
 # Old copied code keeping for reference
