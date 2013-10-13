@@ -1,3 +1,7 @@
+warning('off','all');
+
+% close all
+
 %% Loading things
 tic
 %% Load in the Champion Data
@@ -21,10 +25,24 @@ end
 
 %% Load in Picture in question 
 
-% base = imread('./img/thresh1.png'); qq = 93;
-% base = imread('./img/vi.png'); qq = 104;
-% base = imread('./img/nid_dead.png'); qq = 64;
-base = imread('./img/nid.png'); qq = 64;
+% testChar = 'Renekton';
+% testChar = 'Vi';
+% testChar = 'Thresh';
+% testChar = 'Karthus';
+% testChar = 'Nidalee';
+% testChar = 'Syndra';
+% testChar = 'Chogath';
+% testChar = 'Gragas'; % bad
+
+
+for i = 1:numel(imf)
+   if (strcmp(champs{i}.name,testChar))
+       qq = i;
+   end
+end
+
+base = imread(strcat('./img/',testChar,'.png'));
+
 
 BL = base(end/4:end,1:end/4,:);
 
@@ -70,6 +88,7 @@ sq_charImg = charImg(1:mm,1:mm,:);
 
 scale = sz(1)/mm;
 res_charImg = im2double(imresize(sq_charImg,scale));
+res_charImg = res_charImg(1:sz,1:sz,:);
 dist = zeros([1 numel(imf)]);
 for i = 1:numel(imf)
     dist(i) =  sum(sum(sum(abs(res_charImg - im2double(champs{i}.image)))));
