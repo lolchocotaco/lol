@@ -29,14 +29,16 @@ for ind,champFile in enumerate(imf):
 champSize = 120
 
 
-base = cv2.imread('./img/nidalee1.png')
+base = cv2.imread('./img/vi.png')
 BL = base[len(base)/4:len(base):1,0:len(base):1]
 
 #Magic Box
-xPos = 14
-yPos = 688
-sL = 92
-charBox= [14,688,92, 92]
+
+# charBox= [14,688,92, 92]
+charBox = [16,720,74,68]
+xPos = charBox[0]
+yPos = charBox[1]
+sL = charBox[2]
 scale = champSize/sL
 # cv2.rectangle(BL,(14,688),(14+92,688+92),(0,0,255),5)
 # cv2.imshow("box",BL)
