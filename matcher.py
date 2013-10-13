@@ -35,38 +35,66 @@ class matcher:
         ## FIND THE SQUARE
         # Creating a clean Binary Image
         I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
-        (thresh, I_th) = cv2.threshold(I, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU )
+        (thresh, I_th) = cv2.threshold(I, 128, 255,  cv2.THRESH_OTSU )
 
-        Ifill = I_th
+
+        # cv2.imshow("ifill",I_th)
+
+        Ifill = I_th.copy()
         contour, _ = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
         for cnt in contour:
             cv2.drawContours(Ifill,[cnt], 0, 255, -1)
 
-        gray = Ifill
+        gray = I_th
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
         Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
         # Use Binary Image to get bounding boxes with squareness metrics
 
-        cv2.imshow("area", Iarea)
-        sq_thresh = 0.2
-        sq = []
-        contours, _ = cv2.findContours(Iarea,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        for cnt in contours:
+        sq_thresh = 0.1
+        sq1 = []
+        sq2 =[]
+        #contours, _ = cv2.findContours(Iarea,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        contours1, _ = cv2.findContours(I_th,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        contours2, _ = cv2.findContours(Iarea,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours1:
             m = cv2.moments(cnt)
             x,y,w,h = cv2.boundingRect(cnt)
             sq_size = w*h;
-            area = m['m00']
-            cmpArea = area/sq_size
+            # area = m['m00']
+            # cmpArea = area/sq_size
             sq_sqness = abs(1-max(w,h)/min(w,h))
             loc_bias = 1.0*x/BL.shape[1] + 1.0*(BL.shape[0]-y)/BL.shape[0]
-            sq.append(sq_size * (sq_sqness<sq_thresh)/loc_bias)
+            cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),2)
+            sq1.append(sq_size * (sq_sqness<sq_thresh)/loc_bias)
 
-        ind= max(enumerate(sq), key=itemgetter(1))[0]
-        x,y,w,h = cv2.boundingRect(contours[ind])
+        for cnt in contours2:
+            m = cv2.moments(cnt)
+            x,y,w,h = cv2.boundingRect(cnt)
+            sq_size = w*h;
+            # area = m['m00']
+            # cmpArea = area/sq_size
+            sq_sqness = abs(1-max(w,h)/min(w,h))
+            loc_bias = 1.0*x/BL.shape[1] + 1.0*(BL.shape[0]-y)/BL.shape[0]
+            cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),2)
+            sq2.append(sq_size * (sq_sqness<sq_thresh)/loc_bias)
 
-        cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),5)
+        # (85<w<100)*(85<h<100)
+        ind1= max(enumerate(sq1), key=itemgetter(1))[0]
+        ind2= max(enumerate(sq2), key=itemgetter(1))[0]
 
+        ind = max(enumerate([sq1[ind1], sq2[ind2]]), key=itemgetter(1))[0]
+
+        if(ind == 0):
+            x,y,w,h = cv2.boundingRect(contours1[ind1])
+        elif(ind ==1):
+            x,y,w,h = cv2.boundingRect(contours2[ind2])
+        #x,y,w,h = cv2.boundingRect(contours[ind])
+
+        # cv2.rectangle(BL,(x,y),(x+w,y+h),(0,255,0),5)
+        # print(w)
+        # print(h)
         sl = min(w,h); # Use as side length
+        cv2.rectangle(BL,(x,y),(x+sl,y+sl),(0,255,0),5)
 
         cropped = BL[ y:y+sl,x:x+sl]
         bigCrop = cv2.resize(cropped ,(champSize,champSize))
