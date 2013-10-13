@@ -1,9 +1,10 @@
 %% Loading things
 
-base = imread('./img/thresh1.png');
+% base = imread('./img/thresh1.png');
+base = imread('./img/vi.png');
 
 BL = base(end/4:end,1:end/4,:);
-
+%%
 imdir = './Champions/';
 imf = dir(imdir);
 imf = imf(3:end);
@@ -21,7 +22,7 @@ for i = 1:numel(imf)
     champs{i}.b_hist = imhist(champs{i}.b_ch);
 end
 
-champ_thresh = champs{93};
+% champ_thresh = champs{93};
 
 %% FIND THE SQUARE
 
@@ -41,7 +42,11 @@ for cnt = 1 : numel(stat)
 end
 % [x y w h]
 % sqness 
-sq = (bb(:,3).*bb(:,4)) - (max(bb(:,3:4),[],2)-min(bb(:,3:4),[],2));
+sq_size = (bb(:,3).*bb(:,4));
+sq_sqness = abs(1-max(bb(:,3:4),[],2)./min(bb(:,3:4),[],2));
+% bias_loc = size(BL,2)-bb(:,1);
+sq = sq_size.*(sq_sqness<0.2);
+
 [~,ind] = max(sq);
 charBox = round(bb(ind,:));
 rectangle('position',bb(ind,:),'edgecolor','g','linewidth',2);
@@ -49,6 +54,7 @@ rectangle('position',bb(ind,:),'edgecolor','g','linewidth',2);
 charImg = BL(charBox(2):charBox(2)+charBox(4),charBox(1):charBox(1)+charBox(3),:);
 
 figure
+% charImg = charImg(1:end*.9,:,:);
 imshow(charImg)
 
 %% FIND THE CHAMP
@@ -62,14 +68,81 @@ char_r_hist = imhist(charImg_r);
 char_g_hist = imhist(charImg_g);
 char_b_hist = imhist(charImg_b);
 
-for i = 1:numel(imf)
-    
-    
-end
+tot_corr = zeros([1 numel(imf)]);
+% for i = 1:numel(imf)
+% %     r_corr = xcorr(char_r_hist, champs{i}.r_hist);
+% %     g_corr = xcorr(char_r_hist, champs{i}.g_hist);
+% %     b_corr = xcorr(char_r_hist, champs{i}.b_hist);
+%     
+%     r_corr =  sum((char_r_hist - champs{i}.r_hist).^2);
+%     g_corr =  sum((char_g_hist - champs{i}.g_hist).^2);
+% 	b_corr =  sum((char_b_hist - champs{i}.b_hist).^2);
+%     
+%     tot_corr(i) = r_corr^2+g_corr^2+b_corr^2;
+% %     tot_corr(i) = tot_corr(i)+3000000*(r_corr>3000000);
+% %     tot_corr(i) = tot_corr(i)+3000000*(g_corr>3000000);
+% %     tot_corr(i) = tot_corr(i)+3000000*(b_corr>3000000);
+% end
+% [~, winner] = min(tot_corr);
+% 
+% figure
+% imshow(champs{winner}.image)
 
+sz = size(champs{1}.image);
+mm = min(size(charImg(:,:,1)));
+sq_charImg = charImg(1:mm,1:mm,:);
+
+scale = sz(1)/mm;
+res_charImg = imresize(sq_charImg,scale);
+dist = zeros([1 numel(imf)]);
+for i = 1:numel(imf)
+    dist(i) =  sum(sum(sum(abs(res_charImg - champs{i}.image))));
+end
+[~, winner] = min(dist);
+
+figure
+imshow(champs{winner}.image)
+
+subplot(3,2,1)
+imshow(abs(res_charImg - champs{52}.image));
+
+subplot(3,2,2)
+imshow(abs(res_charImg - champs{104}.image));
+
+subplot(3,2,3)
+imshow(champs{52}.image);
+
+subplot(3,2,4)
+imshow(champs{104}.image);
+
+subplot(3,2,5)
+imshow(res_charImg);
+
+subplot(3,2,6)
+imshow(res_charImg);
 
 
 %%
+
+
+qq = 104;
+
+subplot(2,3,1)
+bar(char_r_hist)
+subplot(2,3,2)
+bar(char_g_hist)
+subplot(2,3,3)
+bar(char_b_hist)
+
+subplot(2,3,4)
+bar(champs{qq}.r_hist)
+subplot(2,3,5)
+bar(champs{qq}.g_hist)
+subplot(2,3,6)
+bar(champs{qq}.b_hist)
+
+
+
 
 
 
