@@ -25,7 +25,7 @@ end
 
 %% Load in Picture in question 
 
-% testChar = 'Renekton';
+testChar = 'Renekton';
 % testChar = 'Vi';
 % testChar = 'Thresh';
 % testChar = 'Karthus';
@@ -33,7 +33,7 @@ end
 % testChar = 'Syndra';
 % testChar = 'Chogath';
 % testChar = 'Gragas'; % bad
-
+% testChar = 'file'; % HIS PIC
 
 for i = 1:numel(imf)
    if (strcmp(champs{i}.name,testChar))
@@ -53,8 +53,9 @@ I = rgb2gray(BL);
 th = graythresh(I);
 I_th = im2bw(I,th);
 
-Ifill = imfill(I_th,'holes');
-Iarea = bwareaopen(Ifill,100);
+% Ifill = imfill(I_th,'holes');
+% Iarea = bwareaopen(Ifill,100);
+Iarea = bwareaopen(I_th,100);
 Ifinal = bwlabel(Iarea);
 stat = regionprops(Ifinal,'boundingbox');
 imshow(I); hold on;
@@ -71,7 +72,7 @@ loc_bias = bb(:,1)./size(Ifinal,2)+(size(Ifinal,1)-bb(:,2))./size(Ifinal,1);
 sq = (sq_size.*(sq_sqness<0.2))./loc_bias;
 
 [~,ind] = max(sq);
-charBox = round(bb(ind,:));
+charBox = floor(bb(ind,:));
 rectangle('position',bb(ind,:),'edgecolor','g','linewidth',2);
 
 charImg = BL(charBox(2):charBox(2)+charBox(4),charBox(1):charBox(1)+charBox(3),:);
