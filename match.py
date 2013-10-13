@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+from operator import itemgetter
 
 
 class champ:
@@ -25,29 +26,62 @@ for ind,champFile in enumerate(imf):
     newChamp = champ(champFile, ''.join([imdir,champFile]))
     champList.append(newChamp)
 
+champSize = 120
 
 
-
-base = cv2.imread('./img/thresh1.png')
+base = cv2.imread('./img/nidalee1.png')
 BL = base[len(base)/4:len(base):1,0:len(base):1]
 
-## FIND THE SQUARE
-# I = rgb2gray(BL);
-# th = graythresh(I);
-# I_th = im2bw(I,th);
-I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
-(thresh, I_th) = cv2.threshold(I, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+#Magic Box
+xPos = 14
+yPos = 688
+sL = 92
+charBox= [14,688,92, 92]
+scale = champSize/sL
+# cv2.rectangle(BL,(14,688),(14+92,688+92),(0,0,255),5)
+# cv2.imshow("box",BL)
 
-# Ifill = imfill(I_th,'holes');
-Ifill = I_th
-contour, hier = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-for cnt in contour:
-    cv2.drawContours(Ifill,[cnt], 0, 255, -1)
+cropped = BL[ yPos:yPos+sL,xPos:xPos+sL]
+bigCrop = cv2.resize(cropped ,(champSize,champSize))
+dist= []
+bigCrop = np.array(bigCrop,dtype='f')
+for ii,champ in enumerate(champList):
+    dist.append(sum(sum(sum(abs( bigCrop -champ.image)))))
 
- # Iarea = bwareaopen(Ifill,100);
-gray = Ifill
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
+winner= min(enumerate(dist), key=itemgetter(1))[0]
+print("Champion is: {0}").format(champList[winner].name)
+cv2.imshow(champList[winner].name,champList[winner].image)
+cv2.waitKey()
+
+
+
+
+
+
+
+
+
+
+
+# ## FIND THE SQUARE
+# # I = rgb2gray(BL);
+# # th = graythresh(I);
+# # I_th = im2bw(I,th);
+# I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
+# (thresh, I_th) = cv2.threshold(I, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+#
+# # Ifill = imfill(I_th,'holes');
+# Ifill = I_th
+# contour, hier = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+# for cnt in contour:
+#     cv2.drawContours(Ifill,[cnt], 0, 255, -1)
+#
+#  # Iarea = bwareaopen(Ifill,100);
+# gray = Ifill
+# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
+# Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
+#
+
 
 # edges = cv2.Canny(I,150,200,apertureSize = 3)
 # lines = cv2.HoughLines(edges,1,np.pi/180,275)
@@ -73,13 +107,13 @@ Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
 
 
 
-contour,hier = cv2.findContours(Iarea,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-Ifinal = Iarea.copy()
-for cnt in contour:
-    cv2.drawContours(Ifinal,[cnt], 0, 255, -1)
-
-cv2.imshow("stuff",Ifinal)
-cv2.waitKey()
+# contour,hier = cv2.findContours(Iarea,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+# Ifinal = Iarea.copy()
+# for cnt in contour:
+#     cv2.drawContours(Ifinal,[cnt], 0, 255, -1)
+#
+# cv2.imshow("stuff",Ifinal)
+# cv2.waitKey()
 #
 #
 # size = 200, 200, 3
@@ -87,12 +121,6 @@ cv2.waitKey()
 # for num,cnt in enumerate(Ifinal):
 #     print("hello")
 # cv2.drawContours(mask,conour)
-
-
-
-
-
-
 
 
 
