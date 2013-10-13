@@ -7,7 +7,7 @@ class champ:
     def __init__(self,fileName,imgPath):
         self.name = fileName.split('.')[0]  #Split by dot in file name
         self.image = cv2.imread(imgPath)
-        self.r_ch = self.image[:][:][0]  #Might be right indexing. lol
+        self.r_ch = self.image[:][:][0]  # Might be right indexing. lol
         self.g_ch = self.image[:][:][1]
         self.b_ch = self.image[:][:][2]
 
@@ -16,11 +16,6 @@ class champ:
         self.g_hist = cv2.calcHist([self.image],[2],None,[256],[0,255])
 
 
-
-
-base = cv2.imread('./img/thresh1.png')
-
-BL = base[len(base)/4:len(base):1][0:len(base):1]
 imdir = './Champions/'
 imf = os.listdir(imdir)
 imf = imf[3:]
@@ -30,33 +25,61 @@ for ind,champFile in enumerate(imf):
     newChamp = champ(champFile, ''.join([imdir,champFile]))
     champList.append(newChamp)
 
-## FIND THE SQUARE
 
+
+
+base = cv2.imread('./img/thresh1.png')
+BL = base[len(base)/4:len(base):1,0:len(base):1]
+
+## FIND THE SQUARE
+# I = rgb2gray(BL);
+# th = graythresh(I);
+# I_th = im2bw(I,th);
 I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
 (thresh, I_th) = cv2.threshold(I, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
-des = cv2.bitwise_not(I_th)
-contour,hier = cv2.findContours(des,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+# Ifill = imfill(I_th,'holes');
+Ifill = I_th
+contour, hier = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 for cnt in contour:
-    cv2.drawContours(des,[cnt],0,255,-1)
+    cv2.drawContours(Ifill,[cnt], 0, 255, -1)
 
-gray = cv2.bitwise_not(des)
+ # Iarea = bwareaopen(Ifill,100);
+gray = Ifill
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-res = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
+Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
 
-cv2.imshow("window",res)
-#Ifill = imfill(I_th,'holes');
-# Ifill = "something"
+# edges = cv2.Canny(I,150,200,apertureSize = 3)
+# lines = cv2.HoughLines(edges,1,np.pi/180,275)
+# img =BL.copy()
+# for rho,theta in lines[0]:
+#     a = np.cos(theta)
+#     b = np.sin(theta)
+#     x0 = a*rho
+#     y0 = b*rho
+#     x1 = int(x0 + 1000*(-b))   # Here i have used int() instead of rounding the decimal value, so 3.8 --> 3
+#     y1 = int(y0 + 1000*(a))    # But if you want to round the number, then use np.around() function, then 3.8 --> 4.0
+#     x2 = int(x0 - 1000*(-b))   # But we need integers, so use int() function after that, ie int(np.around(x))
+#     y2 = int(y0 - 1000*(a))
+#     cv2.line(img,(x1,y1),(x2,y2),(0,255,0),2)
+# cv2.imshow('houghlines',img)
 #
-# #Iarea = bwareaopen(Ifill,100);
-# Iarea = Ifill.copy()
-# contours, hierarchy = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-# for num,cnt in enumerate(contour):
-#     area = cv2.contourArea(cnt)
-#     if  area > 0 and area <= 100:
-#          cv2.drawContours(Iarea, [cnt],0,255, -1);
-#
-# Ifinal,hier = cv2.findContours(IArea,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+
+
+# lines = cv2.HoughLinesP(edges,1,np.pi/180,150, minLineLength = 100, maxLineGap = 10)
+# for x1,y1,x2,y2 in lines[0]:
+#     cv2.line(img,(x1,y1),(x2,y2),(0,255,0),2)
+# cv2.imshow('houghlines',img)
+
+
+
+contour,hier = cv2.findContours(Iarea,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+Ifinal = Iarea.copy()
+for cnt in contour:
+    cv2.drawContours(Ifinal,[cnt], 0, 255, -1)
+
+cv2.imshow("stuff",Ifinal)
+cv2.waitKey()
 #
 #
 # size = 200, 200, 3
