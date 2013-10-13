@@ -4,8 +4,7 @@ import imghdr
 import requests
 import subprocess
 
-def getFrame():
-    channel = 'therainman'
+def getFrame(channel):
     r = requests.get('http://usher.justin.tv/find/%s.json?type=any' % (channel))
     result = r.json()[0]
 
@@ -15,7 +14,10 @@ def getFrame():
 
 
 def matchChamp():
-    getFrame()
+    # getFrame("therainman")
+    # getFrame("guardsmanbob")
+    # getFrame("ms_yuyu")
+    # getFrame("robertxlee")
     M = matcher()
     print(M.matchChamp('file.png'))
 
@@ -26,15 +28,12 @@ def matchChamp():
     #     print(champFile)
     #     print(M.matchChamp(''.join([imdir,champFile])))
 
-
-
     # filePath = raw_input("Give me file name: ")
     # if(os.path.isfile(filePath) and imghdr.what(filePath)):
     #     M = matcher()
     #     print(M.matchChamp(filePath))
     # else:
     #     print("Please input a valid image file path")
-
 
 if __name__ == "__main__":
     matchChamp()

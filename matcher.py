@@ -64,7 +64,7 @@ class matcher:
             # cmpArea = area/sq_size
             sq_sqness = abs(1-max(w,h)/min(w,h))
             loc_bias = 1.0*x/BL.shape[1] + 1.0*(BL.shape[0]-y)/BL.shape[0]
-            cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),2)
+            cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),1)
             sq1.append(sq_size * (sq_sqness<sq_thresh)/loc_bias)
 
         for cnt in contours2:
@@ -75,7 +75,7 @@ class matcher:
             # cmpArea = area/sq_size
             sq_sqness = abs(1-max(w,h)/min(w,h))
             loc_bias = 1.0*x/BL.shape[1] + 1.0*(BL.shape[0]-y)/BL.shape[0]
-            cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),2)
+            cv2.rectangle(BL,(x,y),(x+w,y+h),(0,0,255),1)
             sq2.append(sq_size * (sq_sqness<sq_thresh)/loc_bias)
 
         # (85<w<100)*(85<h<100)
@@ -104,7 +104,15 @@ class matcher:
             dist.append(sum(sum(sum(abs( bigCrop -champ.image)))))
 
         winner= min(enumerate(dist), key=itemgetter(1))[0]
-        cv2.imshow("Original",BL)
+
+        fontFace = cv2.FONT_HERSHEY_PLAIN
+        fontScale = 3
+        thickness = 5
+        text = champList[winner].name
+
+        cv2.putText(BL,text.upper(),(x,y-50),fontFace,fontScale,(0,255,0),thickness)
+        cv2.imshow("Original",base)
+        # cv2.resize(base,(1080,780))
         cv2.imshow(champList[winner].name,champList[winner].image)
         cv2.waitKey()
         return champList[winner].name
