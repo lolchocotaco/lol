@@ -31,14 +31,18 @@ class matcher:
         base = cv2.imread(filePath)
         BL = base[len(base)/2:len(base):1,0:len(base)/4:1]
 
+        # cv2.imshow("cropped",BL)
+        # cv2.imwrite("ss/cropped.jpg",BL)
 
         ## FIND THE SQUARE
         # Creating a clean Binary Image
         I = cv2.cvtColor(BL, cv2.COLOR_BGR2GRAY)
         (thresh, I_th) = cv2.threshold(I, 128, 255,  cv2.THRESH_OTSU )
 
-
-        # cv2.imshow("ifill",I_th)
+        # cv2.imshow("B/W",I)
+        # cv2.imshow("threshold", I_th)
+        # cv2.imwrite("ss/blackwhite.jpg",I)
+        # cv2.imwrite("ss/threshold.jpg",I_th)
 
         Ifill = I_th.copy()
         contour, _ = cv2.findContours(Ifill,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
@@ -49,6 +53,9 @@ class matcher:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
         Iarea = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
         # Use Binary Image to get bounding boxes with squareness metrics
+
+        # cv2.imshow("area",Iarea)
+        # cv2.imwrite("ss/area.jpg", Iarea)
 
         sq_thresh = 0.1
         sq1 = []
@@ -111,7 +118,14 @@ class matcher:
         text = champList[winner].name
 
         cv2.putText(BL,text.upper(),(x,y-50),fontFace,fontScale,(0,255,0),thickness)
+
         cv2.imshow("Original",base)
+        # cv2.imshow("subtract",Iarea)
+        # cv2.imshow("croppedShow",BL)
+        # cv2.imwrite("ss/subtract.jpg",Iarea)
+        # cv2.imwrite("ss/croppedClass.jpg",BL)
+        # cv2.imwrite("originalClass.jpg",base)
+
         # cv2.resize(base,(1080,780))
         cv2.imshow(champList[winner].name,champList[winner].image)
         cv2.waitKey()
