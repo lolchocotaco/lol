@@ -25,7 +25,7 @@ end
 
 %% Load in Picture in question 
 
-testChar = 'Renekton';
+% testChar = 'Renekton';
 % testChar = 'Vi';
 % testChar = 'Thresh';
 % testChar = 'Karthus';
@@ -33,7 +33,7 @@ testChar = 'Renekton';
 % testChar = 'Syndra';
 % testChar = 'Chogath';
 % testChar = 'Gragas'; % bad
-% testChar = 'file'; % HIS PIC
+testChar = 'file'; % HIS PIC
 
 for i = 1:numel(imf)
    if (strcmp(champs{i}.name,testChar))
